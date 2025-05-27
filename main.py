@@ -3,7 +3,9 @@ from discord.ext import commands
 from enum import Enum
 import os
 import subprocess
+from dotenv import load_dotenv
 
+load_dotenv()
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix=">", intents=intents)
@@ -54,8 +56,11 @@ async def finished_callback(sink, channel: discord.TextChannel, *args):
     
     subprocess.run(ffmpeg_command)
     
-
-
+    with open(output_path, 'rb') as f:
+        await channel.send(
+            "Here is the mixed audio of all participants:", 
+            file=discord.File(f, "meeting_mix.wav"))
+    
 @bot.command()
 async def start(ctx: commands.Context, sink: str = "mp3"):
     """Record your voice!"""
