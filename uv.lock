@@ -121,16 +121,29 @@ name = "discord-bot-mts"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "gridfs" },
     { name = "py-cord", extra = ["voice"] },
     { name = "pydub" },
+    { name = "pymongo", extra = ["srv"] },
     { name = "python-dotenv" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "gridfs", specifier = ">=0.0.1" },
     { name = "py-cord", extras = ["voice"], specifier = ">=2.6.1" },
     { name = "pydub", specifier = ">=0.25.1" },
+    { name = "pymongo", extras = ["srv"], specifier = "==3.12" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
+]
+
+[[package]]
+name = "dnspython"
+version = "1.16.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ec/c5/14bcd63cb6d06092a004793399ec395405edf97c2301dfdc146dfbd5beed/dnspython-1.16.0.zip", hash = "sha256:36c5e8e38d4369a08b6780b7f27d790a292b2b08eea01607865bf0936c558e01", size = 266364 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/d3/3aa0e7213ef72b8585747aa0e271a9523e713813b9a20177ebe1e939deb0/dnspython-1.16.0-py2.py3-none-any.whl", hash = "sha256:f69c21288a962f4da86e56c4905b49d11aba7938d3d740e80d9e366ee4f1632d", size = 188353 },
 ]
 
 [[package]]
@@ -191,6 +204,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/d3/c3/0fc2c97dea550df9afd072a37c1e95421652e3206bbeaa02378b24c2b480/frozenlist-1.6.0-cp313-cp313t-win32.whl", hash = "sha256:a4d96dc5bcdbd834ec6b0f91027817214216b5b30316494d2b1aebffb87c534f", size = 128797 },
     { url = "https://files.pythonhosted.org/packages/ae/f5/79c9320c5656b1965634fe4be9c82b12a3305bdbc58ad9cb941131107b20/frozenlist-1.6.0-cp313-cp313t-win_amd64.whl", hash = "sha256:e18036cb4caa17ea151fd5f3d70be9d354c99eb8cf817a3ccde8a7873b074348", size = 134709 },
     { url = "https://files.pythonhosted.org/packages/71/3e/b04a0adda73bd52b390d730071c0d577073d3d26740ee1bad25c3ad0f37b/frozenlist-1.6.0-py3-none-any.whl", hash = "sha256:535eec9987adb04701266b92745d6cdcef2e77669299359c3009c3404dd5d191", size = 12404 },
+]
+
+[[package]]
+name = "gridfs"
+version = "0.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0c/a0/62aa81e575328dd4bffffab8a180673833d08caf171950f1a8a3aa0ba45f/gridfs-0.0.1.tar.gz", hash = "sha256:e0c0a2491922e1588a0e9442f5ba92a059bc2810507d8f9d0cb3c91363bbecd0", size = 2170 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/06/65/aa92f319a7cb01613655ecf6ab20b562c430829f35a9910f2255b9700288/gridfs-0.0.1-py3-none-any.whl", hash = "sha256:d0b2e2167067a8a9eedac507ce680a3467ab65a2fcbdcf8d0926862b6b14ad84", size = 2726 },
 ]
 
 [[package]]
@@ -352,6 +374,17 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/fe/9a/e6bca0eed82db26562c73b5076539a4a08d3cffd19c3cc5913a3e61145fd/pydub-0.25.1.tar.gz", hash = "sha256:980a33ce9949cab2a569606b65674d748ecbca4f0796887fd6f46173a7b0d30f", size = 38326 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a6/53/d78dc063216e62fc55f6b2eebb447f6a4b0a59f55c8406376f76bf959b08/pydub-0.25.1-py2.py3-none-any.whl", hash = "sha256:65617e33033874b59d87db603aa1ed450633288aefead953b30bded59cb599a6", size = 32327 },
+]
+
+[[package]]
+name = "pymongo"
+version = "3.12.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/38/f2/f3e8be03c9994354a5e6c542b6cd76550127f202fcc3a328e1324ee68317/pymongo-3.12.0.tar.gz", hash = "sha256:b88d1742159bc93a078733f9789f563cef26f5e370eba810476a71aa98e5fbc2", size = 818554 }
+
+[package.optional-dependencies]
+srv = [
+    { name = "dnspython" },
 ]
 
 [[package]]
