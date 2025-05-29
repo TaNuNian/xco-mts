@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from gridfs import GridFS
 import shutil
+from datetime import datetime
 
 load_dotenv()
 intents = discord.Intents.default()
@@ -32,7 +33,7 @@ class Sinks(Enum):
     mp4 = discord.sinks.MP4Sink()
     m4a = discord.sinks.M4ASink()
 
-def upload_file_to_mongo(root_folder_path, meeting_name):
+def upload_file_to_mongo(root_folder_path, meeting_name, start_time, end_tim, duration):
     for root, _, files in os.walk(root_folder_path):
         for file in files:
             file_path = os.path.join(root, file)
@@ -44,27 +45,40 @@ def upload_file_to_mongo(root_folder_path, meeting_name):
                 metadata={
                     "meeting": meeting_name,
                     "type": "individual",
-                    "user": user_id
+                    "user": user_id,
+                    "start_time": start_time.isoformat(),
+                    "end_time": end_tim.isoformat(),
+                    "duration": duration
                 }
             else:
                 metadata = {
                     "meeting": meeting_name,
-                    "type": "mixed"
+                    "type": "mixed",
+                    "start_time": start_time.isoformat(),
+                    "end_time": end_tim.isoformat(),
+                    "duration": duration
                 }
-            with open(file_path, 'rb') as f:
-                data = f.read()
-                fs.put(
-                    data, 
-                    filename=gridfs_filename, 
-                    metadata=metadata
-                )
+            try:
+                with open(file_path, 'rb') as f:
+                    data = f.read()
+                    fs.put(
+                        data, 
+                        filename=gridfs_filename, 
+                        metadata=metadata
+                    )
+            except Exception as e:
+                print(f"Error uploading {file_path} to MongoDB: {e}")
               
-async def finished_callback(sink, channel: discord.TextChannel, *args):
+async def finished_callback(sink, channel: discord.TextChannel, start_time: datetime):
+    end_time = datetime.utcnow()
+    duration = (end_time - start_time).total_seconds()
+    
     recorded_users = [f"<@{user_id}>" for user_id in sink.audio_data.keys()]
     await sink.vc.disconnect()
     
     await channel.send(
         f"Finished! Recorded audio for {', '.join(recorded_users)}."
+        f" Duration: {duration:.2f} seconds."
     )
     
     os.makedirs("audio/sounds", exist_ok=True)
@@ -87,7 +101,9 @@ async def finished_callback(sink, channel: discord.TextChannel, *args):
     
     subprocess.run(ffmpeg_command)
     
-    upload_file_to_mongo("audio", "meeting1")
+    meeting_name = f"meeting_{start_time.strftime('%Y%m%d_%H%M%S')}"
+
+    upload_file_to_mongo("audio", meeting_name, start_time, end_time, duration)
     await channel.send(
         "Uploaded audio files to MongoDB successfully!",
     )
@@ -119,12 +135,17 @@ async def start(
         return await ctx.send(f"Invalid sink. Choose one of: {available}")
 
     vc = await voice.channel.connect()
-    connections.update({ctx.guild.id: vc})
-
+    start_time = datetime.utcnow()
+    connections[ctx.guild.id] = {
+        "vc": vc,
+        "start_time": start_time
+    }
+    
     vc.start_recording(
         sink_enum.value,
         finished_callback,
         ctx.channel,
+        start_time,
         sync_start=True
     )
 
@@ -134,10 +155,18 @@ async def start(
 async def stop(ctx: discord.ApplicationContext):
     """Stop recording."""
     if ctx.guild.id in connections:
-        vc = connections[ctx.guild.id]
-        vc.stop_recording()
+        session = connections[ctx.guild.id]
+        vc = session['vc']
+        start_time = session['start_time']
+        end_time = datetime.utcnow()
+        duration = (end_time - start_time).total_seconds()
+        
+        if vc.is_connected():
+            vc.stop_recording()
+            
         del connections[ctx.guild.id]
-        await ctx.message.delete()
+        
+        await ctx.send(f"⏱️ Meeting duration: {duration}")
     else:
         await ctx.send("Not recording in this guild.")
 
