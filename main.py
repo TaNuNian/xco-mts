@@ -1,5 +1,4 @@
 import discord
-from discord.ext import commands
 from enum import Enum
 import os
 import subprocess
@@ -11,7 +10,7 @@ import shutil
 load_dotenv()
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix=">", intents=intents)
+bot = discord.Bot(intents=intents)
 
 connections = {}
 
@@ -34,7 +33,7 @@ class Sinks(Enum):
     m4a = discord.sinks.M4ASink()
 
 def upload_file_to_mongo(root_folder_path, meeting_name):
-    for root, dirs, files in os.walk(root_folder_path):
+    for root, _, files in os.walk(root_folder_path):
         for file in files:
             file_path = os.path.join(root, file)
             relative_path = os.path.relpath(file_path, root_folder_path)
@@ -59,13 +58,10 @@ def upload_file_to_mongo(root_folder_path, meeting_name):
                     filename=gridfs_filename, 
                     metadata=metadata
                 )
-                
+              
 async def finished_callback(sink, channel: discord.TextChannel, *args):
-    recorded_users = [f"<@{user_id}>" for user_id, audio in sink.audio_data.items()]
+    recorded_users = [f"<@{user_id}>" for user_id in sink.audio_data.keys()]
     await sink.vc.disconnect()
-    files = [
-        discord.File(audio.file, f"{user_id}.{sink.encoding}") for user_id, audio in sink.audio_data.items()
-    ]
     
     await channel.send(
         f"Finished! Recorded audio for {', '.join(recorded_users)}."
@@ -95,24 +91,27 @@ async def finished_callback(sink, channel: discord.TextChannel, *args):
     await channel.send(
         "Uploaded audio files to MongoDB successfully!",
     )
-    # with open(output_path, 'rb') as f:
-    #     await channel.send(
-    #         "Here is the mixed audio of all participants:", 
-    #         file=discord.File(f, "meeting_mix.wav"))
+    
     try:
         shutil.rmtree("audio")
     except Exception as e:
         await channel.send(f"⚠️ Failed to delete local files: {e}")
     
-@bot.command()
-async def start(ctx: commands.Context, sink: str = "mp3"):
-    """Record your voice!"""
+@bot.slash_command(name="start", description="เริ่มการอัดเสียงในห้องแชทเสียง")
+async def start(
+        ctx: discord.ApplicationContext,
+        sink: str = discord.Option(
+            name="sink",
+            description="Choose the audio format to record in.",
+            choices=[s.name for s in Sinks],
+            default="mp3"
+        )
+    ):
     voice = ctx.author.voice
 
     if not voice:
         return await ctx.send("You're not in a vc right now")
 
-    # Normalize and convert string to enum
     try:
         sink_enum = Sinks[sink.lower()]
     except KeyError:
@@ -131,9 +130,8 @@ async def start(ctx: commands.Context, sink: str = "mp3"):
 
     await ctx.send("The recording has started!")
 
-
-@bot.command()
-async def stop(ctx: commands.Context):
+@bot.slash_command(name="stop", description="หยุดการอัดเสียงและอัปโหลดไปยัง MongoDB")
+async def stop(ctx: discord.ApplicationContext):
     """Stop recording."""
     if ctx.guild.id in connections:
         vc = connections[ctx.guild.id]
