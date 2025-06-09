@@ -46,7 +46,7 @@ A Discord bot that records voice channel conversations, transcribes them using O
 
 2. **Install dependencies**
    ```bash
-   pip install -r requirements.txt
+   uv sync
    ```
 
 3. **Set up environment variables**
@@ -64,7 +64,7 @@ A Discord bot that records voice channel conversations, transcribes them using O
 ### Running the Bot
 
 ```bash
-python main_refactored.py
+uv run main.py
 ```
 
 ## Usage
