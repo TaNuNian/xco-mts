@@ -1,0 +1,25 @@
+# Discord Bot Dependencies
+py-cord>=2.4.0
+
+# Audio Processing
+faster-whisper>=0.10.0
+
+# OpenAI Integration  
+openai>=1.0.0
+
+# Database/Storage
+supabase>=1.0.0
+
+# Environment Management
+python-dotenv>=1.0.0
+
+# Standard libraries (already included in Python)
+# - enum
+# - os
+# - re
+# - json
+# - subprocess
+# - datetime
+# - io
+# - typing
+# - tempfile
