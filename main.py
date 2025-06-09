@@ -210,8 +210,8 @@ async def finished_callback(sink, channel: discord.TextChannel, start_time: date
         await upload_audio(mixed_audio, mix_storage_path, channel)
 
         # Transcribe the mixed audio
-        await channel.send(f"Transcription:\n{transcription}")
         transcription = await transcribe_audio_from_memory(mixed_audio, model)
+        await channel.send(f"Transcription:\n{transcription}")
         
         # Upload transcription as text file
         transcription_bytes = transcription.encode('utf-8')
