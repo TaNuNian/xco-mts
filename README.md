@@ -22,7 +22,6 @@ A Discord bot that records voice channel conversations, transcribes them using O
 ├── transcription_service.py # Whisper transcription and OpenAI integration
 ├── storage_service.py      # Supabase storage operations
 ├── utils.py               # Common utility functions
-├── requirements.txt       # Python dependencies
 └── .env.example          # Environment variables template
 ```
 
