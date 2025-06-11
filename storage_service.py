@@ -94,3 +94,35 @@ async def upload_text_file(
     except Exception as e:
         await channel.send(f"⚠️ Failed to upload text file: {e}")
         return False
+    
+async def get_transcript(meeting_name: str) -> str:
+    """
+    Retrieve the full transcript of a meeting from Supabase storage.
+    
+    Args:
+        meeting_name: Name of the meeting
+        channel: Discord channel for error messages
+        
+    Returns:
+        Full transcript as a string, or an error message if retrieval fails
+    """
+    try:
+        folder = f"{meeting_name}/text_segments/"
+        files_name = supabase_client.storage.from_("meeting").list(folder)
+        
+        if not files_name:
+            return "⚠️ No transcript segments found for this meeting."
+        sorted_files = sorted(files_name, key=lambda x: int(x.name.split('.')[0]))
+        
+        full_transcript = ""
+        for file in sorted_files:
+            path = folder + file['name']
+            file_data = supabase_client.storage.from_("meeting").download(path).decode('utf-8')
+            full_transcript += file_data.strip() + "\n"
+            
+        return full_transcript
+        
+    except Exception as e:
+        return f"⚠️ Failed to retrieve transcript: {e}"
+
+

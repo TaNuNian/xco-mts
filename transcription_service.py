@@ -7,7 +7,7 @@ from faster_whisper import WhisperModel
 from config import openai_client, MEETING_ASSISTANT_PROMPT
 
 
-async def transcribe_audio_from_memory(audio_data: bytes, model: WhisperModel) -> ChatCompletion:
+async def transcribe_audio_from_memory(audio_data: bytes, model: WhisperModel) -> str:
     """
     Transcribe audio data and create a meeting summary using OpenAI.
     
@@ -27,16 +27,27 @@ async def transcribe_audio_from_memory(audio_data: bytes, model: WhisperModel) -
             segments, _ = model.transcribe(temp_file.name, beam_size=5)
             transcription = "\n".join([segment.text for segment in segments])
 
-            # Generate meeting summary using OpenAI
-            response = openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": MEETING_ASSISTANT_PROMPT},
-                    {"role": "user", "content": f"Please summarize the following transcription:\n{transcription}"}
-                ],
-                temperature=0.3
-            )
-            return response
+            return transcription
             
         finally:
             os.unlink(temp_file.name)
+
+async def summarize_transcription(transcription: str) -> str:
+    """
+    Generate a summary for the given transcription using OpenAI.
+    
+    Args:
+        transcription: Transcription text
+        
+    Returns:
+        OpenAI ChatCompletion response with summary
+    """
+    response = openai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": MEETING_ASSISTANT_PROMPT},
+            {"role": "user", "content": f"Please summarize the following transcription:\n{transcription}"}
+        ],
+        temperature=0.3
+    )
+    return response.choices[0].message.content.strip()
