@@ -160,8 +160,10 @@ class MeetingRecorder:
         # Transcribe the mixed audio
         transcription = await transcribe_audio_from_memory(mixed_audio, whisper_model)
         transcription_content = transcription.choices[0].message.content
-        
+        from structure_output import make_structure_output
+        structured_output = await make_structure_output(transcription_content)
         await channel.send(f"📝 Transcription:\n{transcription_content}")
+        await channel.send(structured_output.model_dump_json())
 
         # Upload transcription as text file
         transcription_path = f'{meeting_name}/transcription.txt'
